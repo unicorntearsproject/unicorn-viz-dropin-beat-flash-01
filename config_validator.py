@@ -20,8 +20,9 @@ def validate_config(config_data: dict[str, Any]) -> list[str]:
     if not isinstance(section, dict):
         return ['[beat_flash] must be a table']
 
-    if 'enabled' in section and not isinstance(section['enabled'], bool):
-        errors.append('[beat_flash] enabled must be a boolean')
+    for key in ('enabled', 'start_enabled'):
+        if key in section and not isinstance(section[key], bool):
+            errors.append(f'[beat_flash] {key} must be a boolean')
 
     for key in _NUMERIC:
         if key in section and not isinstance(section[key], (int, float)):

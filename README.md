@@ -1,8 +1,9 @@
 # beat-flash-01 — BPM-Locked Strobe (Safety-Governed)
 
 A global post-FX pass that flashes the frame on detected beats, drawn last in
-the post chain (on top of any colour grade). **Disabled by default** — the
-operator must opt in.
+the post chain (on top of any colour grade). Loaded by default, but **inactive
+at boot** (`start_enabled = false`) for photosensitivity safety — the operator
+opts in with `Ctrl+Shift+Alt+B` or `start_enabled = true`.
 
 ## Safety first
 
@@ -21,18 +22,19 @@ These ceilings cannot be raised via config, OSC, or MIDI.
 
 | Key | Action |
 | --- | --- |
-| `Ctrl+Alt+B` | Toggle the strobe on/off |
-| `Ctrl+Alt+N` | Cycle flash mode (full / edge / pulse) |
-| `Ctrl+Alt+-` | Brightness ceiling down |
-| `Ctrl+Alt+=` | Brightness ceiling up (still capped) |
+| `Ctrl+Shift+Alt+B` | Toggle the strobe on/off |
+| `Ctrl+Shift+Alt+N` | Cycle flash mode (full / edge / pulse) |
+| `Ctrl+Shift+Alt+-` | Brightness ceiling down |
+| `Ctrl+Shift+Alt+=` | Brightness ceiling up (still capped) |
 
 ## Configuration
 
 ```toml
 [beat_flash]
-enabled = false
+enabled = true          # load the drop-in (default true)
+start_enabled = false   # OFF at boot (photosensitivity); Ctrl+Shift+Alt+B / set true
 max_hz = 3.0            # hard-capped at 3.0 for safety
-max_brightness = 0.5    # hard-capped at 0.8
+max_brightness = 0.7    # hard-capped at 0.8
 flash_duration = 0.12   # seconds; clamped below the min inter-flash interval
 beat_division = 1       # flash every Nth beat
 mode = "full"           # full | edge | pulse

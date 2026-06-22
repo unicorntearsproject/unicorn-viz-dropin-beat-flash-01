@@ -9,9 +9,10 @@ runtime governor hard-clamps every limit regardless of what is configured.
 
 | Key | Type | Default | Notes |
 | --- | --- | --- | --- |
-| `enabled` | bool | `false` | Master switch (off by default) |
+| `enabled` | bool | `true` | Load the drop-in at all |
+| `start_enabled` | bool | `false` | Live at boot; OFF by default for safety (use `Ctrl+Shift+Alt+B`) |
 | `max_hz` | float | `3.0` | Flash rate cap; **hard-capped at 3.0** |
-| `max_brightness` | float | `0.5` | Flash brightness; **hard-capped at 0.8** |
+| `max_brightness` | float | `0.7` | Flash brightness; **hard-capped at 0.8** |
 | `flash_duration` | float | `0.12` | Seconds; clamped below the min inter-flash interval |
 | `beat_division` | int | `1` | Flash every Nth beat |
 | `mode` | str | `full` | `full` \| `edge` \| `pulse` |

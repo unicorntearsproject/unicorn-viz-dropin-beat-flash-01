@@ -40,7 +40,7 @@ def test_disabled_by_default(ctx) -> None:
 
 
 def test_update_arms_flash_when_enabled(ctx) -> None:
-    c = BeatFlashController(ctx, 16, 16, {'enabled': True})
+    c = BeatFlashController(ctx, 16, 16, {'start_enabled': True})
     c.update(0.01, _beat(1.0))
     assert c.is_active() is True
     c.destroy()
@@ -54,7 +54,7 @@ def test_disabled_update_does_not_arm(ctx) -> None:
 
 
 def test_toggle_resets_on_disable(ctx) -> None:
-    c = BeatFlashController(ctx, 16, 16, {'enabled': True})
+    c = BeatFlashController(ctx, 16, 16, {'start_enabled': True})
     c.update(0.01, _beat(1.0))
     assert c.is_active() is True
     c.toggle()  # disable
@@ -63,7 +63,7 @@ def test_toggle_resets_on_disable(ctx) -> None:
 
 
 def test_cycle_mode(ctx) -> None:
-    c = BeatFlashController(ctx, 16, 16, {'enabled': True, 'mode': 'full'})
+    c = BeatFlashController(ctx, 16, 16, {'start_enabled': True, 'mode': 'full'})
     assert c.mode == 'full'
     assert c.cycle_mode() == 'edge'
     assert c.cycle_mode() == 'pulse'
@@ -81,7 +81,7 @@ def test_flash_brightens_pixels(ctx) -> None:
     dst = ctx.texture((8, 8), 4)
     df = ctx.framebuffer(color_attachments=[dst])
 
-    c = BeatFlashController(ctx, 8, 8, {'enabled': True, 'mode': 'full', 'max_brightness': 0.6})
+    c = BeatFlashController(ctx, 8, 8, {'start_enabled': True, 'mode': 'full', 'max_brightness': 0.6})
     c.update(0.001, _beat(1.0))  # arm a flash
     assert c.apply(src, df, 0.001, 0.0, 0.0, 0.0, 0.0) is True
     px = np.frombuffer(df.read(components=4), dtype=np.uint8).reshape(8, 8, 4)[0, 0]

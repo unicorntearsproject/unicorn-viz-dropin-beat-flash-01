@@ -6,14 +6,15 @@ Last updated: 2026-06-21
 
 ## No flashing
 
-- Confirm `[beat_flash] enabled = true` (off by default) or press `Ctrl+Alt+B`.
+- Confirm the strobe is switched on: `[beat_flash] start_enabled = true` (OFF by
+  default for safety) or press `Ctrl+Shift+Alt+B`.
 - The strobe only fires on beats — confirm the audio pipeline is detecting
   beats (the HUD/Auto-VJ status shows beat activity).
 - `beat_division > 1` reduces the flash rate (every Nth beat).
 
 ## Flashing feels too weak / too strong
 
-- Adjust `max_brightness` (or `Ctrl+Alt+-` / `Ctrl+Alt+=`). It is hard-capped at
+- Adjust `max_brightness` (or `Ctrl+Shift+Alt+-` / `Ctrl+Shift+Alt+=`). It is hard-capped at
   0.8 for safety and cannot be raised beyond that.
 
 ## I set max_hz above 3 but it isn't faster

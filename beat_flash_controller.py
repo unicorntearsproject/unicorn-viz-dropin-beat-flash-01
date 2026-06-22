@@ -11,7 +11,7 @@ flash even when the pass is otherwise idle); :meth:`apply` only renders the
 current governor level.  Shares the post-chain contract with postfx-01 /
 color-grade-01: ``apply(src_tex, dst_fbo, dt, bass, mid, treble, beat)``.
 
-Disabled by default — the operator must opt in (``Ctrl+Alt+B`` or config).
+Disabled by default — the operator must opt in (``Ctrl+Shift+Alt+B`` or config).
 """
 from __future__ import annotations
 
@@ -44,10 +44,10 @@ DROPIN_CAPABILITIES = {
 }
 
 HELP_ENTRIES = [
-    ('Beat Flash', 'Ctrl+Alt+B', 'Toggle BPM-locked strobe (safety-governed)'),
-    ('Beat Flash', 'Ctrl+Alt+N', 'Cycle flash mode (full / edge / pulse)'),
-    ('Beat Flash', 'Ctrl+Alt+-', 'Flash brightness down'),
-    ('Beat Flash', 'Ctrl+Alt+=', 'Flash brightness up'),
+    ('Beat Flash', 'Ctrl+Shift+Alt+B', 'Toggle BPM-locked strobe (safety-governed)'),
+    ('Beat Flash', 'Ctrl+Shift+Alt+N', 'Cycle flash mode (full / edge / pulse)'),
+    ('Beat Flash', 'Ctrl+Shift+Alt+-', 'Flash brightness down'),
+    ('Beat Flash', 'Ctrl+Shift+Alt+=', 'Flash brightness up'),
 ]
 
 _MODES = ('full', 'edge', 'pulse')
@@ -95,9 +95,12 @@ void main() {
         // Brightness pulse: lift overall exposure toward the flash colour.
         outc = src * (1.0 + lvl) + uColor * (lvl * 0.25);
     } else {
-        // Full-frame screen blend.
+        // Full-frame screen blend + a small additive lift so the flash still
+        // reads clearly over already-bright scenes (screen blend alone barely
+        // moves near-white pixels).
         vec3 flash = uColor * lvl;
-        outc = 1.0 - (1.0 - src) * (1.0 - flash);
+        vec3 screen = 1.0 - (1.0 - src) * (1.0 - flash);
+        outc = screen + uColor * (lvl * 0.18);
     }
     fragColor = vec4(clamp(outc, 0.0, 1.0), 1.0);
 }
@@ -122,10 +125,13 @@ class BeatFlashController:
         self._cfg = dict(cfg or {})
         self._vj_api: Any = None
 
-        self.enabled = bool(self._cfg.get('enabled', False))
+        # ``enabled`` gates loading (host); ``start_enabled`` decides whether the
+        # strobe is live at boot.  Defaults OFF for photosensitivity safety — the
+        # operator must opt in explicitly (Ctrl+Shift+Alt+B or start_enabled).
+        self.enabled = bool(self._cfg.get('start_enabled', False))
         self._governor = FlashGovernor(
             max_hz=float(self._cfg.get('max_hz', 3.0)),
-            max_brightness=float(self._cfg.get('max_brightness', 0.5)),
+            max_brightness=float(self._cfg.get('max_brightness', 0.7)),
             flash_duration=float(self._cfg.get('flash_duration', 0.12)),
             beat_division=int(self._cfg.get('beat_division', 1)),
             beat_threshold=float(self._cfg.get('beat_threshold', 0.45)),
@@ -230,9 +236,13 @@ class BeatFlashController:
 
     # ------------------------------------------------------------- input/teardown
     def handle_key(self, sym: int, mod: int) -> 'str | None | bool':
-        """Handle Ctrl+Alt beat-flash hotkeys; return a status string when handled."""
+        """Handle Ctrl+Shift+Alt beat-flash hotkeys; return status string when handled."""
         import sdl2  # noqa: PLC0415
-        if not ((mod & sdl2.KMOD_CTRL) and (mod & sdl2.KMOD_ALT)):
+        if not (
+            (mod & sdl2.KMOD_CTRL)
+            and (mod & sdl2.KMOD_ALT)
+            and (mod & sdl2.KMOD_SHIFT)
+        ):
             return False
         if sym == sdl2.SDLK_b:
             on = self.toggle()

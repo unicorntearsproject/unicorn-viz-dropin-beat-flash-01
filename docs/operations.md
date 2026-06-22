@@ -18,9 +18,9 @@ Flash the frame on detected beats as a safety-governed, BPM-locked strobe.
 
 ## Live operation
 
-- `Ctrl+Alt+B` — toggle on/off (off by default).
-- `Ctrl+Alt+N` — cycle mode: full → edge → pulse.
-- `Ctrl+Alt+-` / `Ctrl+Alt+=` — brightness ceiling down/up (still hard-capped).
+- `Ctrl+Shift+Alt+B` — toggle on/off (off by default).
+- `Ctrl+Shift+Alt+N` — cycle mode: full → edge → pulse.
+- `Ctrl+Shift+Alt+-` / `Ctrl+Shift+Alt+=` — brightness ceiling down/up (still hard-capped).
 
 ## Safety
 
