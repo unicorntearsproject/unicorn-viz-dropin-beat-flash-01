@@ -161,6 +161,16 @@ class BeatFlashController:
     # ------------------------------------------------------------- public API
     def set_vj_api(self, api: Any) -> None:
         self._vj_api = api
+        try:
+            api.register_midi_actions('Beat Flash', [
+                ('beat_flash_toggle', 'Toggle beat flash'),
+                ('beat_flash_mode',   'Cycle flash mode'),
+            ])
+            api.register_midi_action_handler('beat_flash_toggle', self.toggle)
+            api.register_midi_action_handler('beat_flash_mode',   self.cycle_mode)
+        except Exception as exc:
+            import logging  # noqa: PLC0415
+            logging.getLogger(__name__).debug('beat-flash-01: MIDI registration failed: %s', exc)
 
     def is_active(self) -> bool:
         """True only while a governed flash is visible (skips the pass at rest)."""
