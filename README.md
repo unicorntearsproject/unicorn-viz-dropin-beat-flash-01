@@ -1,5 +1,8 @@
 # beat-flash-01 — BPM-Locked Strobe (Safety-Governed)
 
+**Version 0.8.0**
+
+
 A global post-FX pass that flashes the frame on detected beats, drawn last in
 the post chain (on top of any colour grade). Loaded by default, but **inactive
 at boot** (`start_enabled = false`) for photosensitivity safety — the operator
@@ -59,3 +62,7 @@ the current governed level. Registered as the `beat_flash` subsystem.
 Core only: `moderngl`, `numpy`. No new dependencies.
 
 See `docs/` for operations, configuration, integration, and troubleshooting.
+
+## Changelog
+
+- **0.8.0** — initial versioned release.
