@@ -1,6 +1,6 @@
 # beat-flash-01 — BPM-Locked Strobe (Safety-Governed)
 
-**Version 0.8.0**
+**Version 0.9.0**
 
 
 A global post-FX pass that flashes the frame on detected beats, drawn last in
@@ -37,8 +37,8 @@ These ceilings cannot be raised via config, OSC, or MIDI.
 enabled = true          # load the drop-in (default true)
 start_enabled = false   # OFF at boot (photosensitivity); Ctrl+Shift+Alt+B / set true
 max_hz = 3.0            # hard-capped at 3.0 for safety
-max_brightness = 0.7    # hard-capped at 0.8
-flash_duration = 0.12   # seconds; clamped below the min inter-flash interval
+max_brightness = 0.78   # hard-capped at 0.8
+flash_duration = 0.22   # seconds; clamped below the min inter-flash interval
 beat_division = 1       # flash every Nth beat
 mode = "full"           # full | edge | pulse
 color = [1.0, 1.0, 1.0] # flash colour (RGB 0–1)
@@ -65,4 +65,12 @@ See `docs/` for operations, configuration, integration, and troubleshooting.
 
 ## Changelog
 
+- **0.9.0** — Stronger shipped defaults: `max_brightness` `0.7` → `0.78`
+  (closer to the 0.8 safety ceiling) and `flash_duration` `0.12` → `0.22`
+  seconds (longer hold, still well under the non-overlap clamp). The flash
+  now reads as a clearly punchier hit on a typical beat instead of a token
+  bump; `max_hz`, `beat_division`, and `mode` were already at their
+  strongest useful settings (3.0 Hz cap, every beat, full-frame) so those
+  were left untouched. All values remain fully overridable via
+  `[beat_flash]` in `config.toml`.
 - **0.8.0** — initial versioned release.

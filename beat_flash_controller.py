@@ -15,7 +15,7 @@ Disabled by default — the operator must opt in (``Ctrl+Shift+Alt+B`` or config
 """
 from __future__ import annotations
 
-__version__ = '0.8.0'
+__version__ = '0.9.0'
 
 import importlib.util
 import logging
@@ -133,8 +133,8 @@ class BeatFlashController:
         self.enabled = bool(self._cfg.get('start_enabled', False))
         self._governor = FlashGovernor(
             max_hz=float(self._cfg.get('max_hz', 3.0)),
-            max_brightness=float(self._cfg.get('max_brightness', 0.7)),
-            flash_duration=float(self._cfg.get('flash_duration', 0.12)),
+            max_brightness=float(self._cfg.get('max_brightness', 0.78)),
+            flash_duration=float(self._cfg.get('flash_duration', 0.22)),
             beat_division=int(self._cfg.get('beat_division', 1)),
             beat_threshold=float(self._cfg.get('beat_threshold', 0.45)),
         )

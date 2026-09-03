@@ -39,6 +39,19 @@ def test_disabled_by_default(ctx) -> None:
     c.destroy()
 
 
+def test_default_intensity_is_the_punchier_0_9_0_baseline(ctx) -> None:
+    """Un-overridden defaults should ship at the stronger 0.9.0 values.
+
+    Peak brightness 0.7 -> 0.78 and hold time 0.12s -> 0.22s (see README
+    changelog); both stay comfortably under the governor's absolute safety
+    ceilings (0.8 brightness, non-overlapping-flash duration clamp).
+    """
+    c = BeatFlashController(ctx, 16, 16, {})
+    assert c._governor.max_brightness == pytest.approx(0.78)
+    assert c._governor._flash_duration == pytest.approx(0.22)
+    c.destroy()
+
+
 def test_update_arms_flash_when_enabled(ctx) -> None:
     c = BeatFlashController(ctx, 16, 16, {'start_enabled': True})
     c.update(0.01, _beat(1.0))
