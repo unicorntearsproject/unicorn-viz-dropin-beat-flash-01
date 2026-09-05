@@ -101,3 +101,68 @@ def test_flash_brightens_pixels(ctx) -> None:
     # Screen-blend with a white flash brightens the grey source.
     assert int(px[0]) > 51  # 0.2 * 255
     c.destroy()
+
+
+# ------------------------------------------------------------ control room
+
+class _FakeVJApi:
+    def __init__(self) -> None:
+        self.panels: dict[str, object] = {}
+
+    def register_midi_actions(self, section, actions) -> None:
+        pass
+
+    def register_midi_action_handler(self, action, fn) -> None:
+        pass
+
+    def register_operator_panel(self, panel) -> None:
+        self.panels[panel.name] = panel
+
+    def unregister_operator_panel(self, name: str) -> bool:
+        return self.panels.pop(name, None) is not None
+
+
+def test_set_vj_api_registers_the_panel_on_the_fx_page(ctx) -> None:
+    c = BeatFlashController(ctx, 16, 16, {})
+    api = _FakeVJApi()
+    c.set_vj_api(api)
+    panel = api.panels['beat_flash']
+    assert panel.title == 'Beat Flash' and panel.page == 'fx' and panel.size == 'small'
+    assert panel.content == c._operator_panel_content
+    assert panel.on_action == c._operator_panel_action
+    assert set(panel.tooltips) == {'toggle', 'mode', 'bright_down', 'bright_up'}
+    c.destroy()
+
+
+def test_panel_content_mirrors_snapshot(ctx) -> None:
+    c = BeatFlashController(ctx, 16, 16, {'start_enabled': True})
+    content = c._operator_panel_content()
+    assert content.status == 'ON'
+    by_label = {r.label: r.value for r in content.rows}
+    assert by_label['Mode'] == c.mode
+    meters = {m.label: m.value for m in content.meters}
+    assert 0.0 <= meters['Level'] <= 1.0
+    assert meters['Brightness'] == pytest.approx(c._governor.max_brightness)
+    assert content.buttons[0].active is True
+    c.destroy()
+
+
+def test_panel_actions_match_the_hotkeys(ctx) -> None:
+    c = BeatFlashController(ctx, 16, 16, {})
+    before = c.enabled
+    msg = c._operator_panel_action('toggle', None)
+    assert c.enabled != before
+    assert msg == f'Beat flash {"on" if c.enabled else "off"} ({c.mode})'
+    assert c._operator_panel_action('mode', None) == f'Beat flash mode: {c.mode}'
+    up = c._operator_panel_action('bright_up', None)
+    assert up == f'Flash brightness {c._governor.max_brightness:.2f}'
+    assert c._operator_panel_action('nope', None) is None
+    c.destroy()
+
+
+def test_destroy_unregisters_the_panel(ctx) -> None:
+    c = BeatFlashController(ctx, 16, 16, {})
+    api = _FakeVJApi()
+    c.set_vj_api(api)
+    c.destroy()
+    assert 'beat_flash' not in api.panels

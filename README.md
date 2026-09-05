@@ -1,6 +1,6 @@
 # beat-flash-01 — BPM-Locked Strobe (Safety-Governed)
 
-**Version 0.9.0**
+**Version 0.10.0**
 
 
 A global post-FX pass that flashes the frame on detected beats, drawn last in
@@ -65,6 +65,7 @@ See `docs/` for operations, configuration, integration, and troubleshooting.
 
 ## Changelog
 
+- **0.10.0** — Control Room panel (P1 of `docs/planning/control-room-drop-in-integration-plan-2026-09-05.md`): registered on the shared **FX** page from `set_vj_api()` — mode, max Hz, live level and brightness meters, TOGGLE / MODE / − / + buttons calling the same `toggle()` / `cycle_mode()` / `adjust_brightness()` as the `Ctrl+Shift+Alt+B/N/-/=` hotkeys and flashing the same text. Unregistered in `destroy()`.
 - **0.9.0** — Stronger shipped defaults: `max_brightness` `0.7` → `0.78`
   (closer to the 0.8 safety ceiling) and `flash_duration` `0.12` → `0.22`
   seconds (longer hold, still well under the non-overlap clamp). The flash

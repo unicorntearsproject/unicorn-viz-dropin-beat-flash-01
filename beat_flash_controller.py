@@ -15,7 +15,7 @@ Disabled by default — the operator must opt in (``Ctrl+Shift+Alt+B`` or config
 """
 from __future__ import annotations
 
-__version__ = '0.9.0'
+__version__ = '0.10.0'
 
 import importlib.util
 import logging
@@ -173,6 +173,25 @@ class BeatFlashController:
         except Exception as exc:
             import logging  # noqa: PLC0415
             logging.getLogger(__name__).debug('beat-flash-01: MIDI registration failed: %s', exc)
+        # Control Room panel (docs/planning/control-room-drop-in-integration-
+        # plan-2026-09-05.md, P1); guarded so an older core just gets no panel.
+        register = getattr(api, 'register_operator_panel', None)
+        if callable(register):
+            try:
+                from unicornviz.operator_panels import OperatorPanel  # noqa: PLC0415
+                register(OperatorPanel(
+                    name='beat_flash',
+                    title='Beat Flash',
+                    page='fx',
+                    priority=110,
+                    size='small',
+                    content=self._operator_panel_content,
+                    on_action=self._operator_panel_action,
+                    tooltips={'toggle': 'Toggle the BPM-locked strobe (safety-governed)', 'mode': 'Cycle flash mode (full / edge / pulse)', 'bright_down': 'Flash brightness down', 'bright_up': 'Flash brightness up'},
+                ))
+            except Exception as exc:
+                import logging  # noqa: PLC0415
+                logging.getLogger(__name__).debug('beat-flash-01: operator panel registration failed: %s', exc)
 
     def is_active(self) -> bool:
         """True only while a governed flash is visible (skips the pass at rest)."""
@@ -188,6 +207,46 @@ class BeatFlashController:
             f'en={int(self.enabled)} mode={self.mode} '
             f'lvl={self._governor.level:.2f} maxHz={self._governor.max_hz:.1f}'
         )
+
+    def _operator_panel_content(self) -> Any:
+        """Control Room panel state -- CR render thread; reads snapshot() only."""
+        from unicornviz.operator_panels import PanelButton, PanelContent, PanelMeter, PanelRow  # noqa: PLC0415
+        snap = self.snapshot()
+        on = bool(snap.get('enabled', False))
+        return PanelContent(
+            status='ON' if on else 'OFF',
+            rows=(
+                PanelRow('Mode', str(snap.get('mode', '-'))),
+                PanelRow('Max Hz', f"{float(snap.get('max_hz', 0.0)):.1f}"),
+            ),
+            meters=(
+                PanelMeter('Level', max(0.0, min(1.0, float(snap.get('level', 0.0))))),
+                PanelMeter(
+                    'Brightness',
+                    max(0.0, min(1.0, float(snap.get('max_brightness', 0.0)))),
+                    f"{float(snap.get('max_brightness', 0.0)):.2f}",
+                ),
+            ),
+            buttons=(
+                PanelButton('toggle', 'TOGGLE', active=on),
+                PanelButton('mode', 'MODE'),
+                PanelButton('bright_down', '-'),
+                PanelButton('bright_up', '+'),
+            ),
+        )
+
+    def _operator_panel_action(self, action: str, _payload: Any) -> str | None:
+        """Control Room buttons -> the same verbs and flash text as the hotkeys."""
+        if action == 'toggle':
+            on = self.toggle()
+            return f'Beat flash {"on" if on else "off"} ({self.mode})'
+        if action == 'mode':
+            return f'Beat flash mode: {self.cycle_mode()}'
+        if action == 'bright_down':
+            return f'Flash brightness {self.adjust_brightness(-0.05):.2f}'
+        if action == 'bright_up':
+            return f'Flash brightness {self.adjust_brightness(0.05):.2f}'
+        return None
 
     def toggle(self) -> bool:
         self.enabled = not self.enabled
@@ -268,6 +327,13 @@ class BeatFlashController:
         return False
 
     def destroy(self) -> None:
+        # Drop the Control Room panel first (operator_panels.py "Lifecycle").
+        unregister = getattr(getattr(self, '_vj_api', None), 'unregister_operator_panel', None)
+        if callable(unregister):
+            try:
+                unregister('beat_flash')
+            except Exception:
+                pass
         try:
             self._vao.release()
             self._vbo.release()
